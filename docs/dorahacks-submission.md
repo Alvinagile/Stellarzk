@@ -4,6 +4,12 @@
 
 Forg3t StellarZK
 
+## Links
+
+- Live app: https://stellarhacks.forg3t.io
+- Demo video: https://youtu.be/VyWUI4u_4k0
+- GitHub: https://github.com/Alvinagile/Stellarzk
+
 ## One-liner
 
 Private proof receipts for AI deletion workflows, anchored on Stellar without exposing raw user data.

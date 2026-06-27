@@ -4,6 +4,12 @@ Forg3t StellarZK is a hackathon-focused version of Forg3t Protocol for **Stellar
 
 It turns an AI deletion workflow into a private proof receipt and a Stellar-ready attestation package. The product goal is simple: prove that a scoped AI system stopped surfacing sensitive data without publishing the sensitive target itself.
 
+## Demo
+
+- Live app: https://stellarhacks.forg3t.io
+- Demo video: https://youtu.be/VyWUI4u_4k0
+- Submission notes: `docs/dorahacks-submission.md`
+
 ## Why This Exists
 
 Everyone is building AI to remember. Forg3t is building the proof layer for AI to forget.

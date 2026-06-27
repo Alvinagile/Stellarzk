@@ -271,7 +271,7 @@ export default function App() {
             >
               {activeTab === 'command' && (
                 <>
-                  <section className="grid gap-6 xl:grid-cols-[1.12fr,0.88fr]">
+                  <section className="max-w-5xl">
                     <div className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm md:p-8">
                       <div className="flex items-start gap-4">
                         <div className="rounded-2xl bg-[#F2F7FF] p-3 text-[#2F80ED]">
@@ -318,38 +318,6 @@ export default function App() {
                             <span>{liveError}</span>
                           </div>
                         )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[28px] border border-gray-200 bg-gradient-to-br from-[#111111] to-[#263348] p-6 text-white shadow-sm md:p-8">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">Current run</p>
-                          <h3 className="mt-3 text-2xl font-bold">{compiledSource === 'openai' ? 'Live suppression evidence' : 'Ready for Assistant run'}</h3>
-                        </div>
-                        <StatusBadge tone={compiledSource === 'openai' ? thresholdPassed ? 'pass' : 'blocked' : 'ready'}>
-                          {compiledSource === 'openai' ? thresholdPassed ? 'Passed' : 'Blocked' : 'Ready'}
-                        </StatusBadge>
-                      </div>
-                      <div className="mt-6 grid gap-3">
-                        <div className="rounded-xl border border-white/10 bg-white/10 p-4">
-                          <div className="text-xs uppercase tracking-[0.16em] text-blue-100">Measured leak</div>
-                          <div className="mt-2 text-3xl font-bold">{liveResult ? `${liveResult.run.leakScoreBps} bps` : 'Pending'}</div>
-                        </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-xl border border-white/10 bg-white/10 p-4">
-                            <div className="text-xs uppercase tracking-[0.16em] text-blue-100">Validation</div>
-                            <div className="mt-2 text-xl font-bold">{liveResult ? `${liveResult.run.passedTests}/${liveResult.run.totalTests}` : 'Pending'}</div>
-                          </div>
-                          <div className="rounded-xl border border-white/10 bg-white/10 p-4">
-                            <div className="text-xs uppercase tracking-[0.16em] text-blue-100">Proof status</div>
-                            <div className="mt-2 text-xl font-bold">{compiledSource === 'openai' ? zkProofVerified ? 'Groth16 verified' : compiled?.proofReceipt.status === 'threshold_failed' ? 'Failed' : 'Prepared' : 'Pending'}</div>
-                          </div>
-                        </div>
-                        <div className="rounded-xl border border-white/10 bg-white/10 p-4">
-                          <div className="text-xs uppercase tracking-[0.16em] text-blue-100">Evidence root</div>
-                          <div className="mt-2 break-all font-mono text-xs leading-5">{compiledSource === 'openai' ? compiled?.evidenceRoot : 'Generated after live suppression.'}</div>
-                        </div>
                       </div>
                     </div>
                   </section>
