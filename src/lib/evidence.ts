@@ -49,18 +49,18 @@ export interface CompiledEvidence {
 }
 
 export const defaultInput: EvidenceInput = {
-  requester: 'Regulated enterprise deletion desk',
-  environment: 'Customer support RAG and AI assistant stack',
-  executionLane: 'rag_retrieval',
-  hiddenTarget: 'Data subject DS-1847 billing dispute note and linked support transcript',
-  targetSalt: 'stellar-zk-review-2026-07-03',
-  requestReason: 'GDPR Article 17 deletion request requiring proof that the AI workflow no longer surfaces scoped personal data.',
-  beforeLeakScoreBps: 6900,
-  afterLeakScoreBps: 80,
-  maxLeakScoreBps: 100,
-  validationPrompts: 42,
-  retrievalDocumentsRevoked: 17,
-  modelArtifactMutation: 'RAG index revocation plus assistant suppression policy update',
+  requester: 'Forg3t operator',
+  environment: 'OpenAI Assistant black-box suppression runner',
+  executionLane: 'assistant_black_box',
+  hiddenTarget: '',
+  targetSalt: '',
+  requestReason: '',
+  beforeLeakScoreBps: 0,
+  afterLeakScoreBps: 0,
+  maxLeakScoreBps: 0,
+  validationPrompts: 0,
+  retrievalDocumentsRevoked: 0,
+  modelArtifactMutation: 'Assistant suppression policy update',
 };
 
 const encoder = new TextEncoder();

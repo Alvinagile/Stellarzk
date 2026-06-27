@@ -13,6 +13,9 @@ Record deletion is not enough for enterprise AI. The hard part is proving that a
 ## What Works
 
 - Operator-grade React UI based on the Forg3t Avax control-plane design language
+- Server-side Netlify Function for live OpenAI Assistant black-box suppression
+- Real Assistant policy injection, reinforcement prompts, adversarial prompts, and leak-score measurement
+- Optional Supabase persistence for redacted evidence runs through `stellarzk_evidence_runs`
 - Real WebCrypto SHA-256 target commitments
 - Merkle evidence root generation
 - Editable private witness inputs
@@ -23,7 +26,22 @@ Record deletion is not enough for enterprise AI. The hard part is proving that a
 - Circom threshold circuit source
 - Soroban anchor contract source
 
-No fake transaction hashes are emitted. If Stellar testnet signing is not configured, the app says so.
+No fake transaction hashes, fake OpenAI runs, or fake Supabase inserts are emitted. If a server secret or Stellar testnet signer is not configured, the app says so.
+
+## Tech Architecture
+
+```mermaid
+flowchart LR
+  UI["React + Vite UI\nstellarhacks.forg3t.io"] --> FN["Netlify Function\n/api/black-box-suppression"]
+  FN --> OAI["OpenAI Assistants API\nblack-box suppression run"]
+  OAI --> TESTS["Reinforcement + adversarial\nvalidation prompt suite"]
+  TESTS --> PROOF["Evidence compiler\ncommitment + Merkle root + proof receipt"]
+  PROOF --> DB["Supabase Postgres\nstellarzk_evidence_runs"]
+  PROOF --> JSON["Downloadable redacted\nJSON evidence bundle"]
+  JSON --> STELLAR["Stellar/Soroban anchor path\nproof hash + evidence root"]
+```
+
+The frontend never receives `OPENAI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, raw Assistant prompts, raw Assistant responses, or the private target after the server-side run. The exported bundle contains commitments, aggregate scores, Merkle leaves, proof receipt metadata, and Stellar anchor metadata.
 
 ## Quick Start
 
@@ -43,6 +61,16 @@ Then set:
 ```bash
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
+```
+
+For the live OpenAI Assistant runner, set these only in Netlify or a server-side local environment:
+
+```bash
+OPENAI_API_KEY=...
+OPENAI_ASSISTANT_ID=...
+OPENAI_BASE_URL=https://api.openai.com/v1
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 Build:
@@ -80,6 +108,26 @@ It proves that the measured post-unlearning leak score is less than or equal to 
 - evidence root
 - measured score
 - threshold score
+
+The live Assistant path converts failed black-box validation attempts into `measuredLeakScoreBps`, then binds that score to the same public signal boundary.
+
+## Supabase Evidence Table
+
+The migration lives in:
+
+```text
+supabase/migrations/20260628000100_create_stellarzk_evidence_runs.sql
+```
+
+It creates `public.stellarzk_evidence_runs` with RLS enabled. Stored rows contain only redacted proof data:
+
+- evidence hash
+- evidence root
+- target commitment
+- proof hash
+- Assistant id hash
+- aggregate leak and validation scores
+- redacted JSON bundle
 
 ## Soroban Contract
 
