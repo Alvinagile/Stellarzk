@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { AssistantSuppressionExecutionResult } from './assistantSuppression';
+import { FORG3T_ZK_ANCHOR_CONTRACT_ID, type StellarAnchorResult } from './stellarAnchor';
+import type { ZkProofResult } from './zkProof';
 
 export interface ServerEvidenceInput {
   requester: string;
@@ -54,7 +56,7 @@ function merkleRoot(leaves: Array<{ label: string; hash: string }>) {
   return level[0];
 }
 
-export function compileServerEvidence(input: ServerEvidenceInput) {
+export function compileServerEvidence(input: ServerEvidenceInput, zkProof?: ZkProofResult, stellarAnchor?: StellarAnchorResult) {
   const createdAt = new Date().toISOString();
   const beforeLeakScoreBps = Math.round(input.run.baselineLeakScore * 10000);
   const afterLeakScoreBps = Math.round(input.run.leakScore * 10000);
@@ -114,18 +116,22 @@ export function compileServerEvidence(input: ServerEvidenceInput) {
 
   const proofReceipt = {
     circuit: 'forg3t_suppression_threshold_v1',
-    scheme: 'Groth16-compatible circuit boundary',
+    scheme: zkProof ? 'Groth16 bn128 verified proof' : 'Groth16 bn128 proof pending',
     status: thresholdPassed ? 'witness_prepared' : 'threshold_failed',
     statement: 'The private deletion target is committed, the redacted evidence root is bound, and the measured OpenAI Assistant leak score is below the public threshold.',
-    proofHash,
+    proofHash: zkProof?.proofHash ?? proofHash,
     boundary: 'No raw target text, test prompt, assistant output, API key, or private witness is exported.',
   };
 
   const stellar = {
     network: 'testnet',
-    contract: 'contracts/forg3t_zk_anchor',
+    contract: FORG3T_ZK_ANCHOR_CONTRACT_ID,
     anchorStatus: thresholdPassed ? 'ready_for_submission' : 'blocked_by_threshold',
-    explorer: 'https://stellar.expert/explorer/testnet',
+    explorer: stellarAnchor?.explorer ?? 'https://stellar.expert/explorer/testnet',
+    mode: stellarAnchor?.mode ?? 'pending',
+    txHash: stellarAnchor?.txHash,
+    sourceAccount: stellarAnchor?.sourceAccount,
+    fallbackReason: stellarAnchor?.fallbackReason,
   };
 
   const bundle = {
@@ -150,6 +156,17 @@ export function compileServerEvidence(input: ServerEvidenceInput) {
       phase1: input.run.phase1,
       phase2: input.run.phase2,
     },
+    zkProof: zkProof ? {
+      protocol: zkProof.protocol,
+      curve: zkProof.curve,
+      circuit: zkProof.circuit,
+      verified: zkProof.verified,
+      proofHash: zkProof.proofHash,
+      publicSignals: zkProof.publicSignals,
+      verificationKeyHash: zkProof.verificationKeyHash,
+      artifacts: zkProof.artifacts,
+      proof: zkProof.proof,
+    } : null,
   };
 
   const evidenceHash = sha256Hex(canonicalJson(bundle));

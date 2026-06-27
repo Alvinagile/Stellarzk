@@ -37,6 +37,10 @@ const tabs: Array<{ id: TabId; label: string; icon: typeof Brain }> = [
   { id: 'stellar', label: 'Stellar Anchor', icon: Network },
 ];
 
+const sorobanContractId = 'CDZ77TVJGUTWUXOY7YDTDBA5BXEISRCBLJPDJ5J5FEFIYV2LCFOH5CHD';
+const sorobanDeployTx = '3d0553be33d5f1c65c0630b12bfe95ea56224336736293749eb95d357b3d21e8';
+const sorobanInvokeTx = '5eac7018243d72b2c8d2939b03e14051a2ce0c803c4a9c859913833c5c84e7e5';
+
 function Field({
   label,
   value,
@@ -118,6 +122,7 @@ export default function App() {
   const maxLeakScoreBps = compiled?.publicSignals.maxLeakScoreBps ?? input.maxLeakScoreBps;
   const validationPrompts = compiled?.publicSignals.validationPrompts ?? input.validationPrompts;
   const thresholdPassed = measuredLeakScoreBps <= maxLeakScoreBps;
+  const zkProofVerified = Boolean((compiled?.bundle.zkProof as { verified?: boolean } | null | undefined)?.verified);
   const leakReduction = useMemo(() => {
     const delta = baselineLeakScoreBps - measuredLeakScoreBps;
     return Math.max(0, (delta / Math.max(baselineLeakScoreBps, 1)) * 100).toFixed(1);
@@ -338,7 +343,7 @@ export default function App() {
                           </div>
                           <div className="rounded-xl border border-white/10 bg-white/10 p-4">
                             <div className="text-xs uppercase tracking-[0.16em] text-blue-100">Proof status</div>
-                            <div className="mt-2 text-xl font-bold">{compiledSource === 'openai' ? compiled?.proofReceipt.status === 'threshold_failed' ? 'Failed' : 'Prepared' : 'Pending'}</div>
+                            <div className="mt-2 text-xl font-bold">{compiledSource === 'openai' ? zkProofVerified ? 'Groth16 verified' : compiled?.proofReceipt.status === 'threshold_failed' ? 'Failed' : 'Prepared' : 'Pending'}</div>
                           </div>
                         </div>
                         <div className="rounded-xl border border-white/10 bg-white/10 p-4">
@@ -354,7 +359,7 @@ export default function App() {
                       <Metric label="Leak reduction" value={`${leakReduction}%`} icon={Gauge} tone="green" />
                       <Metric label="Post-unlearning score" value={`${measuredLeakScoreBps} bps`} icon={ShieldCheck} />
                       <Metric label="Validation prompts" value={`${validationPrompts}`} icon={Workflow} />
-                      <Metric label="Evidence source" value="Live" icon={Layers3} tone="dark" />
+                      <Metric label="ZK proof" value={zkProofVerified ? 'Verified' : 'Pending'} icon={Layers3} tone="dark" />
                     </section>
                   )}
 
@@ -505,27 +510,28 @@ export default function App() {
               )}
 
               {activeTab === 'stellar' && (
-                <section className="grid gap-6 xl:grid-cols-[1fr,1fr]">
-                  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr),minmax(0,1fr)]">
+                  <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="rounded-2xl bg-[#F2F7FF] p-3 text-[#2F80ED]">
                         <Link2 className="h-5 w-5" />
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold">Stellar anchor path</h2>
-                        <p className="text-sm text-[#4B4B4B]">No fake transaction hashes. It builds a real draft only when a local testnet secret exists.</p>
+                        <p className="text-sm text-[#4B4B4B]">Live suppression runs call the deployed Soroban anchor contract and return the confirmed Stellar testnet transaction.</p>
                       </div>
                     </div>
                     <div className="mt-6 grid gap-3">
                       <HashBlock label="Anchor payload root" value={compiled?.evidenceRoot} />
                       <HashBlock label="Anchor proof hash" value={compiled?.proofReceipt.proofHash} />
-                      <HashBlock label="Soroban contract path" value="contracts/forg3t_zk_anchor" />
+                      <HashBlock label="Soroban contract" value={compiled?.stellar.contract ?? sorobanContractId} />
+                      <HashBlock label="Stellar tx hash" value={compiled?.stellar.txHash ?? 'Run live suppression to submit a testnet anchor.'} />
                     </div>
                     <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-[#111111]">
-                      {stellarDraft?.message}
+                      {compiled?.stellar.txHash ? `Submitted to Stellar testnet via ${compiled.stellar.mode}. Explorer: ${compiled.stellar.explorer}` : `Deployed Soroban contract is ready. Deploy tx: ${sorobanDeployTx}. Smoke invoke tx: ${sorobanInvokeTx}. ${stellarDraft?.message ?? ''}`}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <h3 className="text-xl font-bold">Transaction draft</h3>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <StatusBadge tone={stellarDraft?.status === 'ready' ? 'pass' : 'warning'}>
@@ -533,7 +539,7 @@ export default function App() {
                       </StatusBadge>
                       <StatusBadge tone="ready">Testnet</StatusBadge>
                     </div>
-                    <pre className="mt-4 max-h-[480px] overflow-auto rounded-xl bg-gray-950 p-4 text-xs leading-5 text-gray-100">
+                    <pre className="mt-4 max-h-[480px] w-full max-w-full overflow-auto whitespace-pre-wrap break-all rounded-xl bg-gray-950 p-4 text-xs leading-5 text-gray-100">
                       {stellarDraft?.xdr ?? 'Set VITE_STELLAR_TESTNET_SOURCE_SECRET to generate a signed XDR draft locally.'}
                     </pre>
                   </div>

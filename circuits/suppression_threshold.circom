@@ -1,6 +1,6 @@
 pragma circom 2.1.4;
 
-include "../node_modules/circomlib/circuits/comparators.circom";
+include "comparators.circom";
 
 template SuppressionThreshold() {
   signal input measuredLeakScoreBps;
@@ -14,7 +14,8 @@ template SuppressionThreshold() {
   withinThreshold.in[0] <== measuredLeakScoreBps;
   withinThreshold.in[1] <== maxLeakScoreBps;
 
-  valid <== withinThreshold.out;
+  withinThreshold.out === 1;
+  valid <== 1;
 }
 
 component main { public [maxLeakScoreBps, measuredLeakScoreBps, targetCommitment, evidenceRoot] } = SuppressionThreshold();

@@ -23,18 +23,18 @@ Forg3t StellarZK compiles a deletion request into:
 - a threshold proof receipt
 - a Stellar-ready anchor payload
 
-The app intentionally refuses to fabricate transaction hashes. When a local Stellar testnet secret is configured, it builds a signed XDR draft. Otherwise, it shows the exact missing configuration.
+The app intentionally refuses to fabricate transaction hashes. Live runs generate a real OpenAI Assistant suppression attempt, a verified Groth16 threshold proof, a Supabase evidence row, and a Stellar testnet anchor transaction.
 
 ## Demo Script
 
 1. Open the app.
-2. Go to ZK Workbench.
-3. Change the private target witness and observe commitment changes.
-4. Raise `after leak bps` above `max leak bps` and observe the threshold failure.
-5. Download the evidence JSON.
-6. Re-upload the JSON in Evidence Bundle to verify the local hash.
-7. Inspect the Stellar Anchor tab.
-8. Review `circuits/suppression_threshold.circom` and `contracts/forg3t_zk_anchor`.
+2. Enter an OpenAI Assistant ID and API key for the run.
+3. Enter the sensitive target and deletion request.
+4. Run black-box suppression from the home screen.
+5. Inspect the evidence bundle: no raw target, raw prompt, Assistant output, or API key is exported.
+6. Confirm the Groth16 proof status and Stellar tx hash.
+7. Download the JSON evidence bundle.
+8. Review `circuits/suppression_threshold.circom`, `zk-artifacts`, and `contracts/forg3t_zk_anchor`.
 
 ## Why Stellar
 
@@ -46,13 +46,19 @@ Stellar is used as the public attestation layer for proof metadata. Sensitive ta
 - WebCrypto SHA-256 commitments
 - Merkle evidence root generation
 - Downloadable and locally verifiable JSON evidence bundles
-- Circom threshold statement
-- Soroban anchor contract source
-- Stellar SDK XDR draft path gated by local testnet secret
+- Server-side OpenAI Assistant black-box suppression runner
+- Groth16 proof generation and verification through `snarkjs`
+- Committed Circom artifacts for the threshold proof
+- Supabase persistence in `stellarzk_evidence_runs`
+- Soroban anchor contract deployed on Stellar testnet
+- Real Stellar testnet transactions from live runs
 
-## What Comes Next
+## Deployed Proof Anchors
 
-- Generate Groth16 artifacts from `circuits/suppression_threshold.circom`
-- Deploy `contracts/forg3t_zk_anchor` to Stellar testnet
-- Move signed transaction submission to a server-side worker
-- Connect live RAG and assistant suppression runners from the existing Forg3t control plane
+```text
+Contract ID: CDZ77TVJGUTWUXOY7YDTDBA5BXEISRCBLJPDJ5J5FEFIYV2LCFOH5CHD
+WASM hash:   376447396138DE9D09A6118B3DF77EB0BE7B31CBE9DE274150BDA614E7D6FC54
+Deploy tx:   3d0553be33d5f1c65c0630b12bfe95ea56224336736293749eb95d357b3d21e8
+Smoke tx:    5eac7018243d72b2c8d2939b03e14051a2ce0c803c4a9c859913833c5c84e7e5
+SDK tx:      4c4f39f1e054a14d3e67e5eb0d4badd0b02e5a0fa02779237d078e980693d214
+```

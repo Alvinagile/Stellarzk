@@ -44,6 +44,10 @@ export interface CompiledEvidence {
     contract: string;
     anchorStatus: 'ready_for_submission' | 'blocked_by_threshold';
     explorer: string;
+    mode?: string;
+    txHash?: string;
+    sourceAccount?: string;
+    fallbackReason?: string;
   };
   bundle: Record<string, unknown>;
 }
@@ -180,7 +184,7 @@ export async function compileEvidence(input: EvidenceInput): Promise<CompiledEvi
     merkleLeaves: leaves,
     stellar: {
       network: 'testnet',
-      contract: 'contracts/forg3t_zk_anchor',
+      contract: 'CDZ77TVJGUTWUXOY7YDTDBA5BXEISRCBLJPDJ5J5FEFIYV2LCFOH5CHD',
       anchorStatus: thresholdPassed ? 'ready_for_submission' : 'blocked_by_threshold',
       explorer: 'https://stellar.expert/explorer/testnet',
     },

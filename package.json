@@ -15,7 +15,8 @@
     "framer-motion": "^12.24.10",
     "lucide-react": "^0.526.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "snarkjs": "^0.7.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -24,6 +25,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.5.2",
+    "circomlib": "^2.0.5",
     "eslint": "^10.4.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -33,5 +35,8 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.59.4",
     "vite": "^8.0.14"
+  },
+  "overrides": {
+    "underscore": "^1.13.8"
   }
 }

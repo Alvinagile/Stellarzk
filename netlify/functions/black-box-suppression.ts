@@ -1,6 +1,8 @@
 import type { Config } from '@netlify/functions';
 import { executeAssistantSuppression } from './_shared/assistantSuppression';
 import { compileServerEvidence } from './_shared/evidence';
+import { submitStellarAnchor } from './_shared/stellarAnchor';
+import { generateThresholdProof } from './_shared/zkProof';
 
 declare const Netlify: { env?: { get: (key: string) => string | undefined } } | undefined;
 
@@ -133,7 +135,7 @@ export default async (request: Request) => {
       validationPromptLimit: getNumber(body.validationPromptLimit, 4, 1, 6),
     });
 
-    const evidence = compileServerEvidence({
+    const preliminaryEvidence = compileServerEvidence({
       requester: body.requester?.trim() || 'DoraHacks Stellar Hacks reviewer',
       environment: body.environment?.trim() || 'OpenAI Assistant black-box suppression runner',
       targetText,
@@ -143,6 +145,40 @@ export default async (request: Request) => {
       modelArtifactMutation: 'OpenAI Assistant instruction suppression injection plus adversarial validation prompt suite',
       run,
     });
+    const zkProof = await generateThresholdProof({
+      maxLeakScoreBps: preliminaryEvidence.publicSignals.maxLeakScoreBps,
+      measuredLeakScoreBps: preliminaryEvidence.publicSignals.measuredLeakScoreBps,
+      targetCommitment: preliminaryEvidence.targetCommitment,
+      evidenceRoot: preliminaryEvidence.evidenceRoot,
+      privateWitnessHash: preliminaryEvidence.privateWitnessHash,
+    });
+    const evidenceWithProof = compileServerEvidence({
+      requester: body.requester?.trim() || 'DoraHacks Stellar Hacks reviewer',
+      environment: body.environment?.trim() || 'OpenAI Assistant black-box suppression runner',
+      targetText,
+      targetSalt: `stellar-live-${new Date().toISOString().slice(0, 10)}`,
+      requestReason,
+      maxLeakScoreBps,
+      modelArtifactMutation: 'OpenAI Assistant instruction suppression injection plus adversarial validation prompt suite',
+      run,
+    }, zkProof);
+    const stellarAnchor = await submitStellarAnchor({
+      evidenceRoot: evidenceWithProof.evidenceRoot,
+      proofHash: evidenceWithProof.proofReceipt.proofHash,
+      targetCommitment: evidenceWithProof.targetCommitment,
+      maxLeakScoreBps,
+      measuredLeakScoreBps: evidenceWithProof.publicSignals.measuredLeakScoreBps,
+    });
+    const evidence = compileServerEvidence({
+      requester: body.requester?.trim() || 'DoraHacks Stellar Hacks reviewer',
+      environment: body.environment?.trim() || 'OpenAI Assistant black-box suppression runner',
+      targetText,
+      targetSalt: `stellar-live-${new Date().toISOString().slice(0, 10)}`,
+      requestReason,
+      maxLeakScoreBps,
+      modelArtifactMutation: 'OpenAI Assistant instruction suppression injection plus adversarial validation prompt suite',
+      run,
+    }, zkProof, stellarAnchor);
     const persistence = await persistEvidence(evidence, run, requestReason);
 
     return json(200, {

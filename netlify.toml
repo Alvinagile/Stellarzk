@@ -6,6 +6,9 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+[functions."black-box-suppression"]
+  included_files = ["zk-artifacts/**"]
+
 [build.environment]
   NODE_VERSION = "20"
 
